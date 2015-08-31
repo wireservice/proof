@@ -8,23 +8,6 @@ created using the :meth:`Analysis.then` method. Each function must accept a
 ``data`` argument, which is a :class:`dict` of data to be persisted between
 analyses. Modifications made to ``data`` in the scope of one analysis will be
 propogated to all dependent analyses.
-
-When :meth:`Analysis.run` is invoked, the analysis function runs, followed by
-each of dependent analysis created with :meth:`Analysis.then`. These in turn
-invoke their own dependent analyses, allowing a hierarchy to be created. The
-result of each analysis will be cached to disk along with a "fingerprint"
-describing the source of the analysis function at the time it was invoked. If
-you run the same analysis twice without modifying the code, the cached version
-out of the ``data`` will be used for its dependents. Thus you experiment with
-a dependent analysis without constantly recomputing the results of its parent.
-
-.. warning::
-
-    The fingerprint which is generated for each analysis function is **not**
-    recursive, which is to say, it does not include the source of any functions
-    which are invoked by that function. If you modify the source of a function
-    invoked by the analysis function, you will need to ensure that the analysis
-    is manually refreshed by passing ``refresh=True`` to :meth:`Analysis.run`.
 """
 
 import bz2
@@ -43,22 +26,24 @@ from proof.utils import memoize
 
 class Analysis(object):
     """
-    An Analysis is a function whose code configuration and output can be
+    An Analysis is a function whose source code fingerprint and output can be
     serialized to disk. When it is invoked again, if it's code has not changed
     the serialized output will be used rather than executing the code again.
 
-    Implements a promise-like API so that Analyses can depend on one another.
-    If a parent analysis is invalidated then all it's children will be as well.
+    Implements a callback-like API so that Analyses can depend on one another.
+    If a parent analysis changes then it and all it's children will be
+    refreshed.
 
     :param func: A callable that implements the analysis. Must accept a `data`
         argument that is the state inherited from its ancestors analysis.
-    :param parent: The parent analysis of this one, if any.
     :param cache_dir: Where to stored the cache files for this analysis.
+    :param _parent: The parent analysis of this one, if any. For internal use
+        only.
     """
-    def __init__(self, func, parent=None, cache_dir='.proof'):
+    def __init__(self, func, cache_dir='.proof', _parent=None):
         self._name = func.__name__
         self._func = func
-        self._parent = parent
+        self._parent = _parent
         self._cache_dir = cache_dir
         self._next_analyses = []
 
@@ -156,7 +141,7 @@ class Analysis(object):
             `data` argument that is the state inherited from its ancestors
             analysis.
         """
-        analysis = Analysis(next_func, parent=self, cache_dir=self._cache_dir)
+        analysis = Analysis(next_func, cache_dir=self._cache_dir, _parent=self)
 
         self._next_analyses.append(analysis)
 

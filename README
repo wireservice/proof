@@ -1,6 +1,6 @@
-proof is a Python library for creating repeatable, self-documenting data processing workflows.
+proof is a Python library for creating optimized, repeatable and self-documenting data analysis pipelines.
 
-proof was designed to be used with the agate data analysis library.
+proof was designed to be used with the agate data analysis library, but can be used with numpy, pandas or any other method of processing data.
 
 Important links:
 
