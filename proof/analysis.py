@@ -39,7 +39,7 @@ try:
 except ImportError: # pragma: no cover
     import pickle
 
-from utils import memoize
+from proof.utils import memoize
 
 class Analysis(object):
     """
