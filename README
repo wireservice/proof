@@ -1,0 +1,9 @@
+proof is a Python library for creating repeatable, self-documenting data processing workflows.
+
+proof was designed to be used with the agate data analysis library.
+
+Important links:
+
+* Repository:       https://github.com/onyxfish/proof
+* Issues:           https://github.com/onyxfish/proof/issues
+* Documentation:    http://proof.rtfd.org
