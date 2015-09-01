@@ -7,6 +7,19 @@ About
 
 .. include:: ../README
 
+Why proof?
+==========
+
+Why use agate?
+
+* Encourages self-documenting code patterns.
+* Caches output of analyses for faster repeat execution.
+* Plays well with agate or any other data analysis library.
+* Pure Python. It runs everywhere.
+* As simple as it gets. There is only one class.
+* 100% test coverage.
+* Thorough, accurate user documentation.
+
 Installation
 ============
 
