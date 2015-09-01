@@ -7,10 +7,8 @@ About
 
 .. include:: ../README
 
-Why proof?
-==========
-
 Why use proof?
+==============
 
 * Encourages self-documenting code patterns.
 * Caches output of analyses for faster repeat execution.
