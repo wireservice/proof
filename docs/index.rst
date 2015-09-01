@@ -12,7 +12,7 @@ Why use proof?
 
 * Encourages self-documenting code patterns.
 * Caches output of analyses for faster repeat execution.
-* Plays well with agate or any other data analysis library.
+* Plays well with `agate <http://agate.readthedocs.org/>`_ or any other data analysis library.
 * Pure Python. It runs everywhere.
 * As simple as it gets. There is only one class.
 * 100% test coverage.
