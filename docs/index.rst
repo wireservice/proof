@@ -10,7 +10,7 @@ About
 Why proof?
 ==========
 
-Why use agate?
+Why use proof?
 
 * Encourages self-documenting code patterns.
 * Caches output of analyses for faster repeat execution.
