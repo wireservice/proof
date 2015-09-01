@@ -8,7 +8,7 @@ install_requires = []
 setup(
     name='proof',
     version='0.2.0',
-    description='',
+    description='A Python library for creating optimized, repeatable and self-documenting data analysis pipelines.',
     long_description=open('README').read(),
     author='Christopher Groskopf',
     author_email='staringmonkey@gmail.com',
