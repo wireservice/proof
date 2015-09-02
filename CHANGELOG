@@ -1,7 +1,7 @@
 0.2.0
 -----
 
-
+* Don't load analysis cache unless needed. (#1)
 
 0.1.0
 -----

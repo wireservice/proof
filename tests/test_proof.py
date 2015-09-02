@@ -84,7 +84,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
 
-        os.remove(stage2_analysis._cache_path())
+        os.remove(stage2_analysis._cache_path)
 
         analysis.run()
 
@@ -100,7 +100,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
 
-        os.remove(analysis._cache_path())
+        os.remove(analysis._cache_path)
 
         analysis.run()
 

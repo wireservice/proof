@@ -11,6 +11,7 @@ propogated to all dependent analyses.
 """
 
 import bz2
+from collections import MutableMapping
 from copy import deepcopy
 from glob import glob
 import hashlib
@@ -22,7 +23,40 @@ try:
 except ImportError: # pragma: no cover
     import pickle
 
-from proof.utils import memoize
+class Cache(object):
+    """
+    Utility class for managing cached data.
+    """
+    def __init__(self, cache_path):
+        self._cache_path = cache_path
+        self._data = None
+
+    def check(self):
+        """
+        Cache if a cache file exists.
+        """
+        return os.path.exists(self._cache_path)
+
+    def get(self):
+        """
+        Get cached data from memory or disk.
+        """
+        if self._data is None:
+            f = bz2.BZ2File(self._cache_path)
+            self._data = pickle.loads(f.read())
+            f.close()
+
+        return deepcopy(self._data)
+
+    def set(self, data):
+        """
+        Set cached data and write to disk.
+        """
+        self._data = data
+
+        f = bz2.BZ2File(self._cache_path, 'w')
+        f.write(pickle.dumps(self._data))
+        f.close()
 
 class Analysis(object):
     """
@@ -37,57 +71,35 @@ class Analysis(object):
     :param func: A callable that implements the analysis. Must accept a `data`
         argument that is the state inherited from its ancestors analysis.
     :param cache_dir: Where to stored the cache files for this analysis.
-    :param _parent: The parent analysis of this one, if any. For internal use
+    :param _trace: The ancestors this analysis, if any. For internal use
         only.
     """
-    def __init__(self, func, cache_dir='.proof', _parent=None):
+    def __init__(self, func, cache_dir='.proof', _trace=[]):
         self._name = func.__name__
         self._func = func
-        self._parent = _parent
         self._cache_dir = cache_dir
-        self._next_analyses = []
+        self._trace = _trace + [self]
+        self._child_analyses = []
+
+        self._cache_path = os.path.join(self._cache_dir, '%s.cache' % self._fingerprint())
+        self._cache = Cache(self._cache_path)
 
         self._registered_cache_paths = []
+        self._trace[0]._registered_cache_paths.append(self._cache_path)
 
-    @memoize
-    def _trace(self):
-        """
-        Returns the sequence of Analysis instances that lead to this one.
-        """
-        if self._parent:
-            return self._parent._trace() + [self]
-
-        return [self]
-
-    @memoize
-    def _root(self):
-        """
-        Returns the root node of this Analysis' trace. (It may be itself.)
-        """
-        return self._trace()[0]
-
-    @memoize
     def _fingerprint(self):
         """
         Generate a fingerprint for this analysis function.
         """
         hasher = hashlib.md5()
 
-        trace = [analysis._name for analysis in self._trace()]
-        hasher.update('\n'.join(trace).encode('utf-8'))
+        history = [analysis._name for analysis in self._trace]
+        hasher.update('\n'.join(history).encode('utf-8'))
 
         source = inspect.getsource(self._func)
         hasher.update(source.encode('utf-8'))
 
         return hasher.hexdigest()
-
-    def _register_cache(self, path):
-        """
-        Invoked on the root analysis by any descendant analyses that save's a
-        cache file. This list of cache files is used once all analysis has
-        completed to cleanup old cache files.
-        """
-        self._registered_cache_paths.append(path)
 
     def _cleanup_cache_files(self):
         """
@@ -98,41 +110,7 @@ class Analysis(object):
             if path not in self._registered_cache_paths:
                 os.remove(path)
 
-    @memoize
-    def _cache_path(self):
-        """
-        Get the full cache path for the current fingerprint.
-        """
-        return os.path.join(self._cache_dir, '%s.cache' % self._fingerprint())
-
-    def _check_cache(self):
-        """
-        Check if there exists a cache file for the current fingerprint.
-        """
-        return os.path.exists(self._cache_path())
-
-    def _save_cache(self, data):
-        """
-        Save the output data for this analysis from its cache.
-        """
-        if not os.path.exists(self._cache_dir):
-            os.makedirs(self._cache_dir)
-
-        f = bz2.BZ2File(self._cache_path(), 'w')
-        f.write(pickle.dumps(data))
-        f.close()
-
-    def _load_cache(self):
-        """
-        Load the output data for this analysis from its cache.
-        """
-        f = bz2.BZ2File(self._cache_path())
-        data = pickle.loads(f.read())
-        f.close()
-
-        return data
-
-    def then(self, next_func):
+    def then(self, child_func):
         """
         Create a new analysis which will run after this one has completed with
         access to the data it generated.
@@ -141,13 +119,17 @@ class Analysis(object):
             `data` argument that is the state inherited from its ancestors
             analysis.
         """
-        analysis = Analysis(next_func, cache_dir=self._cache_dir, _parent=self)
+        analysis = Analysis(
+            child_func,
+            cache_dir=self._cache_dir,
+            _trace=self._trace
+        )
 
-        self._next_analyses.append(analysis)
+        self._child_analyses.append(analysis)
 
         return analysis
 
-    def run(self, data={}, refresh=False):
+    def run(self, refresh=False, _parent_cache=None):
         """
         Execute this analysis and its descendents. There are four possible
         execution scenarios:
@@ -165,40 +147,31 @@ class Analysis(object):
         location, specify separate cache directories for them using the
         ``cache_dir`` argument to the the :class:`Analysis` constructor.
 
-        :param data: The input "state" from the parent analysis, if any.
         :param refresh: Flag indicating if this analysis must refresh because
             one of its ancestors did.
+        :parent _parent_cache: Data cache for the parent analysis. For internal
+            usage only.
         """
-        self._registered_fingerprints = []
+        if not os.path.exists(self._cache_dir):
+            os.makedirs(self._cache_dir)
 
-        if refresh:
+        if refresh or not self._cache.check():
             print('Refreshing: %s' % self._name)
 
-            local_data = deepcopy(data)
+            if _parent_cache:
+                local_data = _parent_cache.get()
+            else:
+                local_data = {}
 
             self._func(local_data)
-            self._save_cache(local_data)
+            self._cache.set(local_data)
+
+            refresh = True
         else:
-            fingerprint = self._fingerprint()
+            print('Deferring to cache: %s' % self._name)
 
-            if self._check_cache():
-                print('Loaded from cache: %s' % self._name)
+        for analysis in self._child_analyses:
+            analysis.run(refresh=refresh, _parent_cache=self._cache)
 
-                local_data = self._load_cache()
-            else:
-                print('Running: %s' % self._name)
-
-                local_data = deepcopy(data)
-
-                self._func(local_data)
-                self._save_cache(local_data)
-
-                refresh = True
-
-        for analysis in self._next_analyses:
-            analysis.run(local_data, refresh)
-
-        self._root()._register_cache(self._cache_path())
-
-        if self._root() is self:
+        if self._trace[0] is self:
             self._cleanup_cache_files()
