@@ -7,7 +7,7 @@ from a function or any other callable object. Dependent analyses can then be
 created using the :meth:`Analysis.then` method. Each function must accept a
 ``data`` argument, which is a :class:`dict` of data to be persisted between
 analyses. Modifications made to ``data`` in the scope of one analysis will be
-propogated to all dependent analyses.
+propagated to all dependent analyses.
 """
 
 import bz2

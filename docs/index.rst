@@ -96,7 +96,7 @@ In the previous example, both ``select_rows`` and ``calculate_average`` depend o
     rows_selected = data_loaded.then(select_rows)
     rows_selected.then(calculate_average)
 
-Each analysis function must accept a ``data`` argument, which is a :class:`dict` of data to be persisted between analyses. Modifications made to ``data`` in the scope of one analysis will be propogated to all dependent analyses. For example, the three functions we saw before might be implemented like this:
+Each analysis function must accept a ``data`` argument, which is a :class:`dict` of data to be persisted between analyses. Modifications made to ``data`` in the scope of one analysis will be propagated to all dependent analyses. For example, the three functions we saw before might be implemented like this:
 
 .. code-block:: python
 
@@ -118,7 +118,7 @@ Each analysis function must accept a ``data`` argument, which is a :class:`dict`
         mean = sum([int(r['salary']) for r in data['low_income']]) / len(data['low_income'])
         print(mean)
 
-We can see here how the ``data`` dictionary gets passed from function to function with it's state intact. You can also modify values that already exist in data and those changes will be propogated forward.
+We can see here how the ``data`` dictionary gets passed from function to function with it's state intact. You can also modify values that already exist in data and those changes will be propagated forward.
 
 Finally, we run the analysis, starting at the beginning, by calling :meth:`.Analysis.run`:
 
