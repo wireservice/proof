@@ -1,6 +1,7 @@
 0.3.0
 -----
 
+* Add decorator and logic for analysis functions that are never cached. (#5)
 
 0.2.0
 -----

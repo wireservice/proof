@@ -58,6 +58,14 @@ class Cache(object):
         f.write(pickle.dumps(self._data))
         f.close()
 
+def never_cache(func):
+    """
+    Decorator to flag that a given analysis function should never be cached.
+    """
+    func.never_cache = True
+
+    return func
+
 class Analysis(object):
     """
     An Analysis is a function whose source code fingerprint and output can be
@@ -155,18 +163,29 @@ class Analysis(object):
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
 
-        if refresh or not self._cache.check():
-            print('Refreshing: %s' % self._name)
+        never_cache = getattr(self._func, 'never_cache', False)
 
+        if refresh is True:
+            print('Refreshing: %s' % self._name)
+        elif never_cache:
+            refresh = True
+
+            print('Never cached: %s' % self._name)
+        elif not self._cache.check():
+            refresh = True
+
+            print('Stale cache: %s' % self._name)
+
+        if refresh:
             if _parent_cache:
                 local_data = _parent_cache.get()
             else:
                 local_data = {}
 
             self._func(local_data)
-            self._cache.set(local_data)
 
-            refresh = True
+            if not never_cache:
+                self._cache.set(local_data)
         else:
             print('Deferring to cache: %s' % self._name)
 

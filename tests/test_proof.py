@@ -11,7 +11,7 @@ try:
 except ImportError:
     import unittest
 
-from proof import Analysis
+import proof
 
 TEST_CACHE = '.proof-test'
 
@@ -24,6 +24,8 @@ class TestAnalysis(unittest.TestCase):
         self.executed_stage2 = 0
         self.data_before_stage2 = None
         self.data_after_stage2 = None
+
+        self.executed_stage_never_cache = 0
 
     def tearDown(self):
         shutil.rmtree(TEST_CACHE)
@@ -44,11 +46,15 @@ class TestAnalysis(unittest.TestCase):
 
         self.data_after_stage2 = deepcopy(data)
 
+    @proof.never_cache
+    def stage_never_cache(self, data):
+        self.executed_stage_never_cache += 1
+
     def stage_noop(self, data):
         pass
 
     def test_data_flow(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
 
         data = {}
@@ -62,7 +68,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.data_after_stage2, { 'stage1': 5, 'stage2': 25 })
 
     def test_caching(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
 
         analysis.run()
@@ -75,8 +81,22 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
 
+    def test_never_cache(self):
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis.then(self.stage_never_cache)
+
+        analysis.run()
+
+        self.assertEqual(self.executed_stage1, 1)
+        self.assertEqual(self.executed_stage_never_cache, 1)
+
+        analysis.run()
+
+        self.assertEqual(self.executed_stage1, 1)
+        self.assertEqual(self.executed_stage_never_cache, 2)
+
     def test_descendent_fingerprint_deleted(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         stage2_analysis = analysis.then(self.stage2)
 
         analysis.run()
@@ -92,7 +112,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage2, 2)
 
     def test_ancestor_fingerprint_deleted(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
 
         analysis.run()
@@ -108,7 +128,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage2, 2)
 
     def test_cache_reused(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
 
         analysis.run()
@@ -116,7 +136,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
 
-        analysis2 = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis2 = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis2.then(self.stage2)
 
         analysis2.run()
@@ -125,7 +145,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage2, 1)
 
     def test_ancestor_changed(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         noop = analysis.then(self.stage_noop)
         noop.then(self.stage2)
 
@@ -134,7 +154,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
 
-        analysis2 = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis2 = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis2.then(self.stage2)
 
         analysis2.run()
@@ -143,7 +163,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage2, 2)
 
     def test_same_function_twice_parallel(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         noop = analysis.then(self.stage_noop)
         noop.then(self.stage2)
         noop.then(self.stage2)
@@ -154,7 +174,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(self.executed_stage2, 2)
 
     def test_same_function_twice_sequence(self):
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
         analysis.then(self.stage_noop)
         analysis.then(self.stage2)
@@ -167,7 +187,7 @@ class TestAnalysis(unittest.TestCase):
     def test_cleanup(self):
         self.assertFalse(os.path.exists(TEST_CACHE))
 
-        analysis = Analysis(self.stage1, cache_dir=TEST_CACHE)
+        analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
         analysis.then(self.stage2)
 
         data = {}

@@ -141,16 +141,16 @@ After each analysis the value of ``data`` is cached to disk along with a "finger
 
 ::
 
-    Loaded from cache: load_data
-    Loaded from cache: select_rows
-    Loaded from cache: calculate_average
+    Deferring to cache: load_data
+    Deferring to cache: select_rows
+    Deferring to cache: calculate_average
 
-This indicates that the results of each analysis were loaded from disk. proof tries to be very smart about how much work it does. So, for instance, if you modify the middle analysis in this process, ``select_rows``, only it and other analyses that depend on it will be rerun. Try modifying the threshold for ``low_income`` down to ``20000`` and rerun the script. You should see:
+This indicates that the results of each analysis will be loaded from disk if they are needed. proof tries to be very smart about how much work it does. So, for instance, if you modify the middle analysis in this process, ``select_rows``, only it and other analyses that depend on it will be rerun. Try modifying the threshold for ``low_income`` down to ``20000`` and rerun the script. You should see:
 
 ::
 
-    Loaded from cache: load_data
-    Running: select_rows
+    Deferring to cache: load_data
+    Stale cache: select_rows
     Refreshing: calculate_average
     10666
 
@@ -158,13 +158,44 @@ This indicates that the results of each analysis were loaded from disk. proof tr
 
     One very important caveat exists to this automated dependency resolution. The fingerprint which is generated for each analysis function is **not recursive**, which is to say, it does not include the source of any functions which are invoked by that function. If you modify the source of a function invoked by the analysis function, you will need to ensure that the analysis is manually refreshed by passing ``refresh=True`` to :meth:`Analysis.run` or deleting the cache directory (``.proof`` by default).
 
+Sometimes there are analysis functions you always want to run, even if they are up to date. This is most commonly the case when you simply want to print your results. proof allows you to flag a that an analysis function should always run using the :func:`never_cache` decorator. Let's modify our previous example to move the :code:`print` statement into a separate analysis:
+
+.. code-block:: python
+
+    def calculate_average(data):
+        # The average of a value in the rows is taken
+        data['mean'] = sum([int(r['salary']) for r in data['low_income']]) / len(data['low_income'])
+
+    @proof.never_cache
+    def print_results(data):
+        print(data['mean'])
+
+    data_loaded = proof.Analysis(load_data)
+    rows_selected = data_loaded.then(select_rows)
+    average_calculated = rows_selected.then(calculate_average)
+    average_calculated.then(print_results)
+
+    data_loaded.run()
+
+Now when you run the analysis the results will always be printed::
+
+    Deferring to cache: load_data
+    Deferring to cache: select_rows
+    Deferring to cache: calculate_average
+    Never cached: print_results
+    10666
+
 API
 ===
 
 There is only one class!
 
-.. autoclass:: proof.analysis.Analysis
+.. autoclass:: proof.Analysis
     :members:
+
+(There is also one decorator.)
+
+.. autofunction:: proof.never_cache
 
 Authors
 =======

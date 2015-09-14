@@ -17,11 +17,15 @@ def select_rows(data):
 
 def calculate_average(data):
     # The average of a value in the rows is taken
-    mean = sum([int(r['salary']) for r in data['low_income']]) / len(data['low_income'])
-    print(mean)
+    data['mean'] = sum([int(r['salary']) for r in data['low_income']]) / len(data['low_income'])
+
+@proof.never_cache
+def print_results(data):
+    print(data['mean'])
 
 data_loaded = proof.Analysis(load_data)
 rows_selected = data_loaded.then(select_rows)
-rows_selected.then(calculate_average)
+average_calculated = rows_selected.then(calculate_average)
+average_calculated.then(print_results)
 
 data_loaded.run()
