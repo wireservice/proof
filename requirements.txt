@@ -6,3 +6,4 @@ coverage>=3.7.1
 ordereddict>=1.1
 sphinx_rtd_theme>=0.1.6
 wheel>=0.24.0
+six>=1.6.1

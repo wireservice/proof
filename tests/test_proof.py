@@ -1,10 +1,10 @@
-#!/usr/bin/env Python
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 
 from copy import deepcopy
 from glob import glob
 import os
 import shutil
-from time import sleep
 
 try:
     import unittest2 as unittest
@@ -24,6 +24,8 @@ class TestAnalysis(unittest.TestCase):
         self.executed_stage2 = 0
         self.data_before_stage2 = None
         self.data_after_stage2 = None
+
+        self.executed_stage_unicode = 0
 
         self.executed_stage_never_cache = 0
 
@@ -45,6 +47,11 @@ class TestAnalysis(unittest.TestCase):
         data['stage2'] = data['stage1'] * 5
 
         self.data_after_stage2 = deepcopy(data)
+
+    def stage_unicode(self, data):
+        self.executed_stage_unicode += 1
+
+        data['state_unicode'] = u'ßäœ'
 
     @proof.never_cache
     def stage_never_cache(self, data):
@@ -80,6 +87,12 @@ class TestAnalysis(unittest.TestCase):
 
         self.assertEqual(self.executed_stage1, 1)
         self.assertEqual(self.executed_stage2, 1)
+
+    def test_cache_unicode(self):
+        analysis = proof.Analysis(self.stage_unicode, cache_dir=TEST_CACHE)
+        analysis.run()
+
+        self.assertEqual(self.executed_stage_unicode, 1)
 
     def test_never_cache(self):
         analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)

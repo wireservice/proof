@@ -11,7 +11,6 @@ propagated to all dependent analyses.
 """
 
 import bz2
-from collections import MutableMapping
 from copy import deepcopy
 from glob import glob
 import hashlib
@@ -22,6 +21,8 @@ try:
     import cPickle as pickle
 except ImportError: # pragma: no cover
     import pickle
+
+import six
 
 class Cache(object):
     """
@@ -101,11 +102,21 @@ class Analysis(object):
         """
         hasher = hashlib.md5()
 
-        history = [analysis._name for analysis in self._trace]
-        hasher.update('\n'.join(history).encode('utf-8'))
+        history = '\n'.join([analysis._name for analysis in self._trace])
+
+        # In Python 3 function names can be non-ascii identifiers
+        if six.PY3:
+            history = history.encode('utf-8')
+
+        hasher.update(history)
 
         source = inspect.getsource(self._func)
-        hasher.update(source.encode('utf-8'))
+
+        # In Python 3 inspect.getsource returns unicode data
+        if six.PY3:
+            source = source.encode('utf-8')
+
+        hasher.update(source)
 
         return hasher.hexdigest()
 
@@ -163,11 +174,11 @@ class Analysis(object):
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
 
-        never_cache = getattr(self._func, 'never_cache', False)
+        do_not_cache = getattr(self._func, 'never_cache', False)
 
         if refresh is True:
             print('Refreshing: %s' % self._name)
-        elif never_cache:
+        elif do_not_cache:
             refresh = True
 
             print('Never cached: %s' % self._name)
@@ -184,7 +195,7 @@ class Analysis(object):
 
             self._func(local_data)
 
-            if not never_cache:
+            if not do_not_cache:
                 self._cache.set(local_data)
         else:
             print('Deferring to cache: %s' % self._name)
