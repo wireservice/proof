@@ -10,6 +10,8 @@ analyses. Modifications made to ``data`` in the scope of one analysis will be
 propagated to all dependent analyses.
 """
 
+from __future__ import print_function
+
 import bz2
 from copy import deepcopy
 from glob import glob
@@ -19,10 +21,11 @@ import os
 
 try:
     import cPickle as pickle
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
     import pickle
 
 import six
+
 
 class Cache(object):
     """
@@ -59,6 +62,7 @@ class Cache(object):
         f.write(pickle.dumps(self._data))
         f.close()
 
+
 def never_cache(func):
     """
     Decorator to flag that a given analysis function should never be cached.
@@ -66,6 +70,7 @@ def never_cache(func):
     func.never_cache = True
 
     return func
+
 
 class Analysis(object):
     """
@@ -90,7 +95,9 @@ class Analysis(object):
         self._trace = _trace + [self]
         self._child_analyses = []
 
-        self._cache_path = os.path.join(self._cache_dir, '%s.cache' % self._fingerprint())
+        self._cache_path = os.path.join(
+            self._cache_dir, '%s.cache' % self._fingerprint()
+        )
         self._cache = Cache(self._cache_path)
 
         self._registered_cache_paths = []
