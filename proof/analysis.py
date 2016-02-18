@@ -117,11 +117,8 @@ class Analysis(object):
 
         hasher.update(history)
 
-        # self._func can be a callable object
-        if hasattr(self._func, '__call__'):
-            # get the source from the class
-            if hasattr(self._func, '__class__'):
-                source = inspect.getsource(self._func.__class__)
+        if not inspect.isfunction(self._func) and hasattr(self._func, '__class__'):
+            source = inspect.getsource(self._func.__class__)
         else:
             source = inspect.getsource(self._func)
 
