@@ -84,7 +84,7 @@ class Analysis(object):
     If a parent analysis changes then it and all it's children will be
     refreshed.
 
-    :param callable: A callable that implements the analysis. Must accept a `data`
+    :param _callable: A callable that implements the analysis. Must accept a `data`
         argument that is the state inherited from its ancestors analysis.
     :param cache_dir: Where to stored the cache files for this analysis.
     :param _trace: The ancestors this analysis, if any. For internal use
@@ -119,10 +119,14 @@ class Analysis(object):
 
         hasher.update(history)
 
-        if not inspect.isfunction(self._callable):
-            source = inspect.getsource(self._callable.__class__)
-        else:
+        function_or_method = (
+            inspect.isfunction(self._callable), inspect.ismethod(self._callable)
+        )
+
+        if any(function_or_method):
             source = inspect.getsource(self._callable)
+        else:
+            source = inspect.getsource(self._callable.__class__)
 
         # In Python 3 inspect.getsource returns unicode data
         if six.PY3:
