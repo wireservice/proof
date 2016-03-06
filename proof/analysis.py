@@ -17,6 +17,7 @@ from copy import deepcopy
 from glob import glob
 import hashlib
 import inspect
+import logging
 import os
 
 try:
@@ -25,6 +26,9 @@ except ImportError:  # pragma: no cover
     import pickle
 
 import six
+
+
+logger = logging.getLogger(__name__)
 
 
 class Cache(object):
@@ -46,9 +50,8 @@ class Cache(object):
         Get cached data from memory or disk.
         """
         if self._data is None:
-            f = bz2.BZ2File(self._cache_path)
-            self._data = pickle.loads(f.read())
-            f.close()
+            with bz2.BZ2File(self._cache_path) as f:
+                self._data = pickle.loads(f.read())
 
         return deepcopy(self._data)
 
@@ -58,9 +61,8 @@ class Cache(object):
         """
         self._data = data
 
-        f = bz2.BZ2File(self._cache_path, 'w')
-        f.write(pickle.dumps(self._data))
-        f.close()
+        with bz2.BZ2File(self._cache_path, 'w') as f:
+            f.write(pickle.dumps(self._data))
 
 
 def never_cache(func):
@@ -82,15 +84,15 @@ class Analysis(object):
     If a parent analysis changes then it and all it's children will be
     refreshed.
 
-    :param func: A callable that implements the analysis. Must accept a `data`
+    :param callable: A callable that implements the analysis. Must accept a `data`
         argument that is the state inherited from its ancestors analysis.
     :param cache_dir: Where to stored the cache files for this analysis.
     :param _trace: The ancestors this analysis, if any. For internal use
         only.
     """
-    def __init__(self, func, cache_dir='.proof', _trace=[]):
-        self._name = func.__name__
-        self._func = func
+    def __init__(self, callable, cache_dir='.proof', _trace=[]):
+        self._name = callable.__name__
+        self._callable = callable
         self._cache_dir = cache_dir
         self._trace = _trace + [self]
         self._child_analyses = []
@@ -109,7 +111,7 @@ class Analysis(object):
         """
         hasher = hashlib.md5()
 
-        history = '\n'.join([analysis._name for analysis in self._trace])
+        history = '\n'.join(analysis._name for analysis in self._trace)
 
         # In Python 3 function names can be non-ascii identifiers
         if six.PY3:
@@ -117,10 +119,10 @@ class Analysis(object):
 
         hasher.update(history)
 
-        if not inspect.isfunction(self._func) and hasattr(self._func, '__class__'):
-            source = inspect.getsource(self._func.__class__)
+        if not inspect.isfunction(self._callable):
+            source = inspect.getsource(self._callable.__class__)
         else:
-            source = inspect.getsource(self._func)
+            source = inspect.getsource(self._callable)
 
         # In Python 3 inspect.getsource returns unicode data
         if six.PY3:
@@ -139,20 +141,16 @@ class Analysis(object):
             if path not in self._registered_cache_paths:
                 os.remove(path)
 
-    def then(self, child_func):
+    def then(self, child_callable):
         """
         Create a new analysis which will run after this one has completed with
         access to the data it generated.
 
-        :param func: A callable that implements the analysis. Must accept a
+        :param child_callable: A callable that implements the analysis. Must accept a
             `data` argument that is the state inherited from its ancestors
             analysis.
         """
-        analysis = Analysis(
-            child_func,
-            cache_dir=self._cache_dir,
-            _trace=self._trace
-        )
+        analysis = Analysis(child_callable, self._cache_dir, self._trace)
 
         self._child_analyses.append(analysis)
 
@@ -184,31 +182,28 @@ class Analysis(object):
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
 
-        do_not_cache = getattr(self._func, 'never_cache', False)
+        do_not_cache = getattr(self._callable, 'never_cache', False)
 
-        if refresh is True:
-            print('Refreshing: %s' % self._name)
+        if refresh:
+            logger.info('Refreshing: {}'.format(self._name))
+
         elif do_not_cache:
             refresh = True
-
-            print('Never cached: %s' % self._name)
+            logger.info('Never cached: {}'.format(self._name))
         elif not self._cache.check():
             refresh = True
 
-            print('Stale cache: %s' % self._name)
+            logger.info('Stale cache: {}'.format(self._name))
 
         if refresh:
-            if _parent_cache:
-                local_data = _parent_cache.get()
-            else:
-                local_data = {}
+            local_data = _parent_cache.get() if _parent_cache else {}
 
-            self._func(local_data)
+            self._callable(local_data)
 
             if not do_not_cache:
                 self._cache.set(local_data)
         else:
-            print('Deferring to cache: %s' % self._name)
+            logger.info('Deferring to cache: {}'.format(self._name))
 
         for analysis in self._child_analyses:
             analysis.run(refresh=refresh, _parent_cache=self._cache)
