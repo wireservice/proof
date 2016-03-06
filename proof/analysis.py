@@ -90,9 +90,9 @@ class Analysis(object):
     :param _trace: The ancestors this analysis, if any. For internal use
         only.
     """
-    def __init__(self, callable, cache_dir='.proof', _trace=[]):
-        self._name = callable.__name__
-        self._callable = callable
+    def __init__(self, _callable, cache_dir='.proof', _trace=[]):
+        self._name = _callable.__name__
+        self._callable = _callable
         self._cache_dir = cache_dir
         self._trace = _trace + [self]
         self._child_analyses = []
