@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 from copy import deepcopy
 from glob import glob
@@ -30,7 +30,7 @@ class TestAnalysis(unittest.TestCase):
         self.executed_stage_never_cache = 0
 
     def tearDown(self):
-        shutil.rmtree(TEST_CACHE)
+        shutil.rmtree(TEST_CACHE, ignore_errors=True)
 
     def stage1(self, data):
         self.executed_stage1 += 1
