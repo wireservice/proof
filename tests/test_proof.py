@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 from copy import deepcopy

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 This module contains the :class:`Analysis` class, which is used for creating
 optimized, repeatable data processing workflows. An analysis can be created
