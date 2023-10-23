@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover
 import six
 
 
-class Cache(object):
+class Cache:
     """
     Utility class for managing cached data.
     """
@@ -71,7 +71,7 @@ def never_cache(func):
     return func
 
 
-class Analysis(object):
+class Analysis:
     """
     An Analysis is a function whose source code fingerprint and output can be
     serialized to disk. When it is invoked again, if it's code has not changed
@@ -110,16 +110,14 @@ class Analysis(object):
         history = '\n'.join([analysis._name for analysis in self._trace])
 
         # In Python 3 function names can be non-ascii identifiers
-        if six.PY3:
-            history = history.encode('utf-8')
+        history = history.encode('utf-8')
 
         hasher.update(history)
 
         source = inspect.getsource(self._func)
 
         # In Python 3 inspect.getsource returns unicode data
-        if six.PY3:
-            source = source.encode('utf-8')
+        source = source.encode('utf-8')
 
         hasher.update(source)
 

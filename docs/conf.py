@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -43,8 +42,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'proof'
-copyright = u'2015, Christopher Groskopf'
+project = 'proof'
+copyright = '2015, Christopher Groskopf'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -188,8 +187,8 @@ htmlhelp_basename = 'proofdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'proof.tex', u'proof Documentation',
-     u'Christopher Groskopf', 'manual'),
+    ('index', 'proof.tex', 'proof Documentation',
+     'Christopher Groskopf', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
 
 import os
 import shutil
@@ -52,7 +51,7 @@ class TestAnalysis(unittest.TestCase):
     def stage_unicode(self, data):
         self.executed_stage_unicode += 1
 
-        data['state_unicode'] = u'ßäœ'
+        data['state_unicode'] = 'ßäœ'
 
     @proof.never_cache
     def stage_never_cache(self, data):
