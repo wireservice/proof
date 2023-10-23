@@ -1,0 +1,7 @@
+include *.csv
+include *.py
+include CHANGELOG
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+recursive-include tests *.py
