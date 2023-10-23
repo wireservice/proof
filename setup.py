@@ -1,19 +1,17 @@
-#!/usr/bin/env python
+from setuptools import find_packages, setup
 
-from setuptools import setup
-
-install_requires = [
-    'six>=1.6.1'
-]
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(
     name='proof',
     version='0.4.0',
     description='A Python library for creating optimized, repeatable and self-documenting data analysis pipelines.',
-    long_description=open('README').read(),
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
     author='Christopher Groskopf',
-    author_email='staringmonkey@gmail.com',
-    url='http://proof.readthedocs.org/',
+    author_email='chrisgroskopf@gmail.com',
+    url='https://proof.readthedocs.io/',
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -24,17 +22,21 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    packages=[
-        'proof',
-    ],
-    install_requires=install_requires
+    packages=find_packages(exclude=['tests', 'tests.*']),
+    extras_require={
+        'test': [
+            'pytest',
+            'pytest-cov',
+        ],
+    }
 )
