@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Use Python's logging module instead of ``print()``.
 * Add support for recent Python versions.
 * Drop support for end-of-life Python versions.
 

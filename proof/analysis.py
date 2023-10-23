@@ -11,10 +11,17 @@ propagated to all dependent analyses.
 import bz2
 import hashlib
 import inspect
+import logging
 import pickle
 import os
 from copy import deepcopy
 from glob import glob
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+logger.addHandler(ch)
 
 
 class Cache:
@@ -172,15 +179,15 @@ class Analysis:
         do_not_cache = getattr(self._func, 'never_cache', False)
 
         if refresh is True:
-            print('Refreshing: %s' % self._name)
+            logger.info('Refreshing: %s' % self._name)
         elif do_not_cache:
             refresh = True
 
-            print('Never cached: %s' % self._name)
+            logger.info('Never cached: %s' % self._name)
         elif not self._cache.check():
             refresh = True
 
-            print('Stale cache: %s' % self._name)
+            logger.info('Stale cache: %s' % self._name)
 
         if refresh:
             if _parent_cache:
@@ -193,7 +200,7 @@ class Analysis:
             if not do_not_cache:
                 self._cache.set(local_data)
         else:
-            print('Deferring to cache: %s' % self._name)
+            logger.info('Deferring to cache: %s' % self._name)
 
         for analysis in self._child_analyses:
             analysis.run(refresh=refresh, _parent_cache=self._cache)
