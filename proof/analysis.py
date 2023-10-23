@@ -19,7 +19,7 @@ from glob import glob
 
 try:
     import cPickle as pickle
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
     import pickle
 
 import six
@@ -29,6 +29,7 @@ class Cache(object):
     """
     Utility class for managing cached data.
     """
+
     def __init__(self, cache_path):
         self._cache_path = cache_path
         self._data = None
@@ -60,6 +61,7 @@ class Cache(object):
         f.write(pickle.dumps(self._data))
         f.close()
 
+
 def never_cache(func):
     """
     Decorator to flag that a given analysis function should never be cached.
@@ -67,6 +69,7 @@ def never_cache(func):
     func.never_cache = True
 
     return func
+
 
 class Analysis(object):
     """
@@ -84,6 +87,7 @@ class Analysis(object):
     :param _trace: The ancestors this analysis, if any. For internal use
         only.
     """
+
     def __init__(self, func, cache_dir='.proof', _trace=[]):
         self._name = func.__name__
         self._func = func

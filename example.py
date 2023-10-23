@@ -12,17 +12,21 @@ def load_data(data):
         reader.next()
         data['table'] = list(reader)
 
+
 def select_rows(data):
     # Select relevant rows from the table
     data['low_income'] = filter(lambda r: int(r['salary']) < 20000, data['table'])
+
 
 def calculate_average(data):
     # The average of a value in the rows is taken
     data['mean'] = sum([int(r['salary']) for r in data['low_income']]) / len(data['low_income'])
 
+
 @proof.never_cache
 def print_results(data):
     print(data['mean'])
+
 
 data_loaded = proof.Analysis(load_data)
 rows_selected = data_loaded.then(select_rows)

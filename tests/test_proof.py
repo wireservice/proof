@@ -15,6 +15,7 @@ import proof
 
 TEST_CACHE = '.proof-test'
 
+
 class TestAnalysis(unittest.TestCase):
     def setUp(self):
         self.executed_stage1 = 0
@@ -70,9 +71,9 @@ class TestAnalysis(unittest.TestCase):
 
         self.assertEqual(data, {})
         self.assertEqual(self.data_before_stage1, {})
-        self.assertEqual(self.data_after_stage1, { 'stage1': 5 })
-        self.assertEqual(self.data_before_stage2, { 'stage1' : 5 })
-        self.assertEqual(self.data_after_stage2, { 'stage1': 5, 'stage2': 25 })
+        self.assertEqual(self.data_after_stage1, {'stage1': 5})
+        self.assertEqual(self.data_before_stage2, {'stage1': 5})
+        self.assertEqual(self.data_after_stage2, {'stage1': 5, 'stage2': 25})
 
     def test_caching(self):
         analysis = proof.Analysis(self.stage1, cache_dir=TEST_CACHE)
