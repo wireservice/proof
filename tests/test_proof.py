@@ -1,12 +1,8 @@
 import os
 import shutil
+import unittest
 from copy import deepcopy
 from glob import glob
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
 
 import proof
 

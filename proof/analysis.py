@@ -11,16 +11,10 @@ propagated to all dependent analyses.
 import bz2
 import hashlib
 import inspect
+import pickle
 import os
 from copy import deepcopy
 from glob import glob
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
-
-import six
 
 
 class Cache:
