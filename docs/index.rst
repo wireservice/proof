@@ -2,10 +2,7 @@
 proof |release|
 ===============
 
-About
-=====
-
-.. include:: ../README
+.. include:: ../README.rst
 
 Why use proof?
 ==============
@@ -21,30 +18,9 @@ Why use proof?
 Installation
 ============
 
-Users
------
-
-If you only want to use proof, install it this way::
+.. code-block:: bash
 
     pip install proof
-
-Developers
-----------
-
-If you are a developer that also wants to hack on proof, install it this way::
-
-    git clone git://github.com/onyxfish/proof.git
-    cd proof
-    mkvirtualenv proof
-    pip install -r requirements.txt
-    python setup.py develop
-    tox
-
-.. note::
-
-    proof also supports running tests with coverage::
-
-        nosetests --with-coverage --cover-package=proof
 
 Supported platforms
 -------------------
@@ -128,7 +104,7 @@ Finally, we run the analysis, starting at the beginning, by calling :meth:`.Anal
 
 If we execute `the script we've created <https://github.com/onyxfish/proof/blob/master/example.py>`_, the output is:
 
-::
+.. code-block:: none
 
     Running: load_data
     Refreshing: select_rows
@@ -139,7 +115,7 @@ When :meth:`Analysis.run` is invoked, the analysis function runs, followed by ea
 
 After each analysis the value of ``data`` is cached to disk along with a "fingerprint" describing the source code of the analysis function at the time it was invoked. If you run the same analysis twice without modifying the code, the cached version out of the ``data`` will be used for its dependents. This allows you to experiment with a dependent analysis without constantly recomputing the results of its parent. For example, if I rerun the previous script, I will see:
 
-::
+.. code-block:: none
 
     Deferring to cache: load_data
     Deferring to cache: select_rows
@@ -147,7 +123,7 @@ After each analysis the value of ``data`` is cached to disk along with a "finger
 
 This indicates that the results of each analysis will be loaded from disk if they are needed. proof tries to be very smart about how much work it does. So, for instance, if you modify the middle analysis in this process, ``select_rows``, only it and other analyses that depend on it will be rerun. Try modifying the threshold for ``low_income`` down to ``20000`` and rerun the script. You should see:
 
-::
+.. code-block:: none
 
     Deferring to cache: load_data
     Stale cache: select_rows
@@ -177,7 +153,9 @@ Sometimes there are analysis functions you always want to run, even if they are 
 
     data_loaded.run()
 
-Now when you run the analysis the results will always be printed::
+Now when you run the analysis the results will always be printed:
+
+.. code-block:: none
 
     Deferring to cache: load_data
     Deferring to cache: select_rows
@@ -200,7 +178,7 @@ There is only one class!
 Authors
 =======
 
-.. include:: ../AUTHORS
+.. include:: ../AUTHORS.rst
 
 License
 =======
@@ -210,7 +188,7 @@ License
 Changelog
 =========
 
-.. include:: ../CHANGELOG
+.. include:: ../CHANGELOG.rst
 
 Indices and tables
 ==================
