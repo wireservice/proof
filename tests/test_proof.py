@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from copy import deepcopy
-from glob import glob
 import os
 import shutil
+from copy import deepcopy
+from glob import glob
 
 try:
     import unittest2 as unittest

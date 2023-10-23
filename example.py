@@ -4,6 +4,7 @@ import csv
 
 import proof
 
+
 def load_data(data):
     # Load the data
     with open('example.csv') as f:
