@@ -12,8 +12,8 @@ import bz2
 import hashlib
 import inspect
 import logging
-import pickle
 import os
+import pickle
 from copy import deepcopy
 from glob import glob
 
