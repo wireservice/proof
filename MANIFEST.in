@@ -1,7 +1,10 @@
 include *.csv
 include *.py
+include *.rst
 include CHANGELOG
 recursive-include docs *.py
 recursive-include docs *.rst
+recursive-include docs *.txt
 recursive-include docs Makefile
 recursive-include tests *.py
+exclude .readthedocs.yaml
