@@ -1,5 +1,5 @@
-Unreleased
-----------
+0.4.0 - February 23, 2024
+-------------------------
 
 * Use Python's logging module instead of ``print()``.
 * Add support for recent Python versions.
