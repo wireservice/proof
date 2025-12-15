@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = 'proof'
 copyright = '2015, Christopher Groskopf'
-version = '0.4.0'
+version = '0.4.1'
 release = version
 
 # -- General configuration ---------------------------------------------------
