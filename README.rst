@@ -2,8 +2,8 @@
     :target: https://github.com/wireservice/proof/actions
     :alt: Build status
 
-.. image:: https://coveralls.io/repos/wireservice/proof/badge.svg?branch=master
-    :target: https://coveralls.io/r/wireservice/proof
+.. image:: https://codecov.io/github/wireservice/proof/graph/badge.svg
+    :target: https://codecov.io/github/wireservice/proof
     :alt: Coverage status
 
 .. image:: https://img.shields.io/pypi/dw/proof.svg
